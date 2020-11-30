@@ -1,11 +1,12 @@
 % *********************************************
 % MNIST Neural Networks
 % 손글씨 인식을 위한 신경망 구조
-% Deep.I inc.  jongwon Kim
+% @author: Deep.I Inc. @Jongwon Kim
 % deepi.contact.us@gmail.com
-% Copyright  2019. Deep.I inc. All rights reserved.
-% 모두를 위한 인공지능 수강생분들에게 제공되는 
-% 소스 코드입니다. 감사합니다.
+% Revision date: 2020-12-01
+% See here for more information :
+%    https://deep-eye.tistory.com
+%    https://deep-i.net
 % **********************************************
 % STRUCTURE : BATCH MLP
 % 입력차원: 748개
@@ -14,11 +15,7 @@
 % MODE : Batch
 % ACTIVATION FUNCTION : 'Relu'
 % ERROR RATE : 2.51
-% VERSION : 20181004
-% ***************************************************************
-% 제가 만든 머신의 경우 정확도 97.49%가 나왔습니다.
-% 알맞은 학습률과 퍼셉트론 수, 학습 횟수로 제 기록을 갱신해보세요!
-% ***************************************************************
+
 %% F5를 눌러서 실행해주세요.
 clear all
 clc
@@ -27,10 +24,10 @@ close all
 input("\n\n 퍼셉트론을 활용한 손글씨 인식 프로그램 입니다. [엔터키를 눌러주세요] ")
 
 %%
-load TRAIN_X.mat;       % 학습을 위한 손글씨 데이터 6만개를 불러옵니다.
-load TRAIN_Y.mat;       % 학습을 위한 손글씨 데이터 6만개에 일대일 대응하는 목표 출력값 
-                                           % 6만개를 불러옵니다. 여기서, 출력 차원이 10개이기 때문에
-                                            % y가 60000x10의 데이터가 됩니다. 
+load train\train_input.mat;          % 학습을 위한 손글씨 데이터 6만개를 불러옵니다.
+load train\train_output.mat;       % 학습을 위한 손글씨 데이터 6만개에 일대일 대응하는 목표 출력값 
+                                                                % 6만개를 불러옵니다. 여기서, 출력 차원이 10개이기 때문에
+                                                                % y가 60000x10의 데이터가 됩니다. 
 
 clc
 input("\n\n 배포해드린 숫자 데이터를 로드할게요. [엔터키를 눌러주세요] ")                                              
@@ -141,7 +138,7 @@ clc
 fprintf("    학습 횟수 : %d번\n    학습된 글자 수 : %d 개 (한 번 반복에 64개씩 학습을 진행합니다.)\n    손글씨 인식률 : %0.2f%%\n    전체 오차(MSE) : %0.5f",z,z*batch,round(tex2*100,4),round(tex1,4))
 input("    학습이 완료되었습니다. 테스트 데이터로 실험을 해봅시다!")
 
-T = imread('TEST_1.PNG'); % 여기를 변경하면 내 글씨로 실험 가능!
+T = imread('sample\sample_1.png'); 
 
 TEST =logical(T(:,:,1));
 TEST = double(TEST(:));
