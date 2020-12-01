@@ -1,6 +1,5 @@
 % *********************************************
 % MNIST Neural Networks
-% 손글씨 인식을 위한 신경망 구조
 % @author: Deep.I Inc. @Jongwon Kim
 % deepi.contact.us@gmail.com
 % Revision date: 2020-12-01
@@ -9,9 +8,8 @@
 %    https://deep-i.net
 % **********************************************
 % STRUCTURE : BATCH MLP
-% 입력차원: 748개
-
-% 출력 차원: 10개
+% input : 787 x 60000
+% output : 10 x 60000
 % MODE : Batch
 % ACTIVATION FUNCTION : 'Relu'
 % ERROR RATE : 2.51
@@ -24,24 +22,20 @@ close all
 input("\n\n 퍼셉트론을 활용한 손글씨 인식 프로그램 입니다. [엔터키를 눌러주세요] ")
 
 %%
-load train\train_input.mat;          % 학습을 위한 손글씨 데이터 6만개를 불러옵니다.
-load train\train_output.mat;       % 학습을 위한 손글씨 데이터 6만개에 일대일 대응하는 목표 출력값 
-                                                                % 6만개를 불러옵니다. 여기서, 출력 차원이 10개이기 때문에
-                                                                % y가 60000x10의 데이터가 됩니다. 
+load train\train_input.mat; 
+load train\train_output.mat; 
 
 clc
 input("\n\n 배포해드린 숫자 데이터를 로드할게요. [엔터키를 눌러주세요] ")                                              
                                               
-
-%% 학습을 진행하려는 데이터를 한번 봅시다                                              
-mnist = images(:,1:200);                        % 불러온 6만개중 200개를 따로 추출해서
-mnist = reshape(mnist,28,28,200);  % 이미지 해상도 28x28로 재배열해서
-montage(mnist)                                         % montage 함수로 200개를 동시에 보기
+%% 학습 데이터를 한번 봅시다                                              
+mnist = images(:,1:200);                        
+mnist = reshape(mnist,28,28,200); 
+montage(mnist)                                      
 
 title("학습에 활용할 손글씨 이미지 입니다. [엔터키를 눌러주세요] ")
 clc
 input("\n\n 학습에 활용할 손글씨 이미지 입니다. [엔터키를 눌러주세요] ")
-
 
 x = images;
 cols = size(x,2);
@@ -56,7 +50,6 @@ pNumber_2  = input(" 두번째 층의 퍼셉트론(뉴런)의 개수를 입력해주세요. [1~inf] "
 eh  = input(" 학습을 몇번 반복할지 반복 횟수를 입력해주세요. [1~inf] ");
 fprintf("\n\n %d-%d-%d-%d 의 구조를 갖는 신경망이 완성되었습니다.",imRe^2,pNumber_1,pNumber_2,10);
 input(" 엔터를 누루면 학습을 시작합니다!");
-
 
 fc_w1 =0.1*randn(imRe^2,pNumber_1);
 fc_b1  = 0.1*randn(pNumber_1,1);
