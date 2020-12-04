@@ -45,74 +45,88 @@ clc
 fprintf("데이터의 개수 : %d \n이미지 해상도 : %d x %d\n입력 차원 : %d\n",cols,imRe,imRe,imRe^2)
 alpha = input("\n\n 학습의 정도를 결정하는 Learning Rate을 입력해주세요. [0.1~ 0.0001] ");
 clc
-pNumber_1  = input("\n\n 첫번째 층의 퍼셉트론(뉴런)의 개수를 입력해주세요. [1~inf] ");
-pNumber_2  = input(" 두번째 층의 퍼셉트론(뉴런)의 개수를 입력해주세요. [1~inf] ");
+pNum_1  = input("\n\n 첫번째 층의 퍼셉트론(뉴런)의 개수를 입력해주세요. [1~inf] ");
+pNum_2  = input(" 두번째 층의 퍼셉트론(뉴런)의 개수를 입력해주세요. [1~inf] ");
 eh  = input(" 학습을 몇번 반복할지 반복 횟수를 입력해주세요. [1~inf] ");
-fprintf("\n\n %d-%d-%d-%d 의 구조를 갖는 신경망이 완성되었습니다.",imRe^2,pNumber_1,pNumber_2,10);
+fprintf("\n\n %d-%d-%d-%d 의 구조를 갖는 신경망이 완성되었습니다.",imRe^2,pNum_1,pNum_2,10);
 input(" 엔터를 누루면 학습을 시작합니다!");
 
-fc_w1 =0.1*randn(imRe^2,pNumber_1);
-fc_b1  = 0.1*randn(pNumber_1,1);
-fc_w2 =0.1*randn(pNumber_1,pNumber_2);
-fc_b2  =0.1*randn(pNumber_2,1);
-fc_w3 =0.1*randn(pNumber_2,10);
-fc_b3  = 0.1*randn(10,1);
-
+% 1st Layer
+node_1w = fc_node('weight', imRe^2, pNum_1);
+node_1b = fc_node('bias', pNum_1,1);
+% 2nd Layer
+node_2w = fc_node('weight', pNum_1, pNum_2);
+node_2b = fc_node('bias', pNum_2,1);
+% 3rd Layer
+node_3w = fc_node('weight', pNum_2, 10);
+node_3b = fc_node('bias', 10,1);
+% batch size
 batch =64;
+
 close all
 for z = 1 : eh
     
+        % data shuffle
         p = randperm(cols);                                           
         X = x(:,p(1:batch));
         Y = y(p(1:batch),:);
         
-        batch_1 = 0; batch_2 = 0; batch_3 = 0;
+        % batch memory init (weight)
+        batch_1 = 0; batch_2 = 0; batch_3 = 0; 
+        % batch memory init (bias)
         batch_4 = 0; batch_5 = 0; batch_6 = 0;
         
-       
     for i = 1 : batch    
 
         %% Feed Forward propagation
         
-        Z6 = relu(X(:,i)'*fc_w1 + fc_b1');
-        Z7 = relu(Z6*fc_w2 + fc_b2');
-        Z8 =exp(Z7*fc_w3 + fc_b3') / sum(exp(Z7*fc_w3 + fc_b3')) ;
+        f1 = relu(X(:,i)' * node_1w + node_1b');
+        f2 = relu(f1 * node_2w + node_2b');
+        f3 = exp(f2 * node_3w + node_3b') / sum(exp(f2 * node_3w + node_3b')) ;
         
-        P(i) = find(Z8==max(Z8));
+       %% Error
+        P(i) = find(f3==max(f3));
         O(i) = find(Y(i,:)==max(Y(i,:)));
-        E(i,:) =  - sum(Y(i,:).*log(Z8));
+        E(i,:) = - sum(Y(i,:).*log(f3));
+        
         
         %% Back propagation  
         
-        D8 = Z8 - Y(i,:);    
-        D7 = D8*fc_w3'.*reluGradient(Z7);     
-        D6 = D7*fc_w2'.*reluGradient(Z6);
+        b3 = f3 - Y(i,:);    
+        b2 = b3 * node_3w' .* reluGradient(f2);     
+        b1 = b2 * node_2w' .* reluGradient(f1);
        
-         batch_1 = batch_1 + (alpha*Z7'*D8);        
-         batch_4 = batch_4 + (alpha*D8)'; 
+        %% Batch 
+         batch_1 = batch_1 + (alpha * f2' * b3);        
+         batch_4 = batch_4 + (alpha * b3)'; 
          
-         batch_2 = batch_2 + (alpha*Z6'*D7);   
-         batch_5 = batch_5 + (alpha*D7)';
+         batch_2 = batch_2 + (alpha * f1' * b2);   
+         batch_5 = batch_5 + (alpha * b2)';
     
-         batch_3=  batch_3 + (alpha*X(:,i)*D6);
-         batch_6 = batch_6 + (alpha*D6)' ;
+         batch_3=  batch_3 + (alpha * X(:,i) * b1);
+         batch_6 = batch_6 + (alpha * b1)' ;
          
     end
-        fc_w3 = fc_w3 - batch_1/ batch;
-        fc_w2 = fc_w2 - batch_2/ batch;
-        fc_w1 = fc_w1 - batch_3/ batch;
+    
+        %% Update
+        node_3w = node_3w - batch_1 / batch;
+        node_2w = node_2w - batch_2 / batch;
+        node_1w = node_1w - batch_3 / batch;
         
-        fc_b3 = fc_b3 - batch_4/ batch;
-        fc_b2 = fc_b2 - batch_5/ batch;
-        fc_b1 = fc_b1 - batch_6/ batch;
+        node_3b = node_3b - batch_4 / batch;
+        node_2b = node_2b - batch_5 / batch;
+        node_1b = node_1b - batch_6 / batch;
         
         %% 그래프 보기
         tex2 = mean(P == O);
         tex1 = mean(E);
         mse(z,1) = mean(E);
         format shortG
-        clc
-        fprintf("    최종 학습 횟수 : %d번\n    총 학습된 글자 수 : %d 개 (한 번 반복에 64개씩 학습을 진행합니다.)\n    최종 손글씨 인식률 : %0.2f%%\n    전체 오차(MSE) : %0.5f",z,z*batch,round(tex2*100,4),round(tex1,4))
+        clc        
+        fprintf("학습 횟수 : %d번\n",z)
+        fprintf("학습된 글자 수 : %d 개 (한 번 반복에 64개씩 학습을 진행합니다.)\n",z*batch)
+        fprintf("학습 데이터 손글씨 인식률 : %0.2f%%\n",round(tex2*100,4))
+        fprintf("전체 학습 오차(MSE) : %0.5f",round(tex1,4))
         cla
         subplot(1,2,1)
         plot(mse);
@@ -128,22 +142,28 @@ for z = 1 : eh
         %
 end
 clc
-fprintf("    학습 횟수 : %d번\n    학습된 글자 수 : %d 개 (한 번 반복에 64개씩 학습을 진행합니다.)\n    손글씨 인식률 : %0.2f%%\n    전체 오차(MSE) : %0.5f",z,z*batch,round(tex2*100,4),round(tex1,4))
+fprintf("학습 횟수 : %d번\n",z)
+fprintf("학습된 글자 수 : %d 개 (한 번 반복에 64개씩 학습을 진행합니다.)\n",z*batch)
+fprintf("학습 데이터 손글씨 인식률 : %0.2f%%\n",round(tex2*100,4))
+fprintf("전체 학습 오차(MSE) : %0.5f",round(tex1,4))
 input("    학습이 완료되었습니다. 테스트 데이터로 실험을 해봅시다!")
 
-T = imread('sample\sample_1.png'); 
+%%
+load test\test_input.mat; 
+load test\test_output.mat; 
+test_data =logical(T(:,:,1));
+test_data = double(test_data(:));
 
-TEST =logical(T(:,:,1));
-TEST = double(TEST(:));
-Z6 = relu(TEST'*fc_w1 + fc_b1');
-Z7 = relu(Z6*fc_w2 + fc_b2');
-Z8 =exp(Z7*fc_w3 + fc_b3') / sum(exp(Z7*fc_w3 + fc_b3')) ;
+results = [];
+for i= 1 : 10000
+    f1 = relu(test(:,i)' * node_1w + node_1b');
+    f2 = relu(f1 * node_2w + node_2b');
+    f3 = exp(f2 * node_3w + node_3b') / sum(exp(f2 * node_3w + node_3b'));
+    results(i) =  min( yy(i,:) == (f3 ==max(f3)));
+end
 
-RESULT = find(Z8==max(Z8));
+fprintf("전체 테스트 데이터 학습 결과 %0.2f %% 정확도\n",round(mean(results)*100,2))
 
-close all
-imshow(imresize(T,10))
-title(RESULT)
 
 
 
