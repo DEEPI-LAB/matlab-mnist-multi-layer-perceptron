@@ -15,6 +15,7 @@
 % ERROR RATE : 2.51
 
 %% F5를 눌러서 실행해주세요.
+
 clear all
 clc
 cla
@@ -40,7 +41,7 @@ input("\n\n 학습에 활용할 손글씨 이미지 입니다. [엔터키를 눌러주세요] ")
 x = images;
 cols = size(x,2);
 imRe = 28;
-
+    
 clc
 fprintf("데이터의 개수 : %d \n이미지 해상도 : %d x %d\n입력 차원 : %d\n",cols,imRe,imRe,imRe^2)
 alpha = input("\n\n 학습의 정도를 결정하는 Learning Rate을 입력해주세요. [0.1~ 0.0001] ");
@@ -66,35 +67,35 @@ batch =64;
 close all
 for z = 1 : eh
     
-        % data shuffle
-        p = randperm(cols);                                           
-        X = x(:,p(1:batch));
-        Y = y(p(1:batch),:);
-        
-        % batch memory init (weight)
-        batch_1 = 0; batch_2 = 0; batch_3 = 0; 
-        % batch memory init (bias)
-        batch_4 = 0; batch_5 = 0; batch_6 = 0;
+% data shuffle
+p = randperm(cols);                                           
+X = x(:,p(1:batch));
+Y = y(p(1:batch),:);
+
+% batch memory init (weight)
+batch_1 = 0; batch_2 = 0; batch_3 = 0; 
+% batch memory init (bias)
+batch_4 = 0; batch_5 = 0; batch_6 = 0;
         
     for i = 1 : batch    
 
-        %% Feed Forward propagation
+%% Feed Forward propagation
+
+f1 = relu(X(:,i)' * node_1w + node_1b');
+f2 = relu(f1 * node_2w + node_2b');
+f3 = exp(f2 * node_3w + node_3b') / sum(exp(f2 * node_3w + node_3b')) ;
         
-        f1 = relu(X(:,i)' * node_1w + node_1b');
-        f2 = relu(f1 * node_2w + node_2b');
-        f3 = exp(f2 * node_3w + node_3b') / sum(exp(f2 * node_3w + node_3b')) ;
-        
-       %% Error
-        P(i) = find(f3==max(f3));
-        O(i) = find(Y(i,:)==max(Y(i,:)));
-        E(i,:) = - sum(Y(i,:).*log(f3));
+%% Error
+P(i) = find(f3==max(f3));
+O(i) = find(Y(i,:)==max(Y(i,:)));
+E(i,:) = - sum(Y(i,:).*log(f3));
         
         
-        %% Back propagation  
-        
-        b3 = f3 - Y(i,:);    
-        b2 = b3 * node_3w' .* reluGradient(f2);     
-        b1 = b2 * node_2w' .* reluGradient(f1);
+%% Back propagation  
+
+b3 = f3 - Y(i,:);    
+b2 = b3 * node_3w' .* reluGradient(f2);     
+b1 = b2 * node_2w' .* reluGradient(f1);
        
         %% Batch 
          batch_1 = batch_1 + (alpha * f2' * b3);        
@@ -151,8 +152,6 @@ input("    학습이 완료되었습니다. 테스트 데이터로 실험을 해봅시다!")
 %%
 load test\test_input.mat; 
 load test\test_output.mat; 
-test_data =logical(T(:,:,1));
-test_data = double(test_data(:));
 
 results = [];
 for i= 1 : 10000
@@ -164,6 +163,17 @@ end
 
 fprintf("전체 테스트 데이터 학습 결과 %0.2f %% 정확도\n",round(mean(results)*100,2))
 
-
+results = [];
+for i= 1 : 10
+    f1 = relu(test(:,i)' * node_1w + node_1b');
+    f2 = relu(f1 * node_2w + node_2b');
+    f3 = exp(f2 * node_3w + node_3b') / sum(exp(f2 * node_3w + node_3b'));
+    results(i) =  min( yy(i,:) == (f3 ==max(f3)));
+    
+    im = reshape(test(:,i)',28,28);
+    imshow(im);
+    title(find(f3 ==max(f3))-1)
+    input("")
+end
 
 
